@@ -3251,12 +3251,16 @@ void SurfaceFlinger::onCompositionPresented(PhysicalDisplayId pacesetterId,
     }
 
     if (hasPacesetterDisplay && !pacesetterDisplay->isPoweredOn()) {
+#ifndef DISABLE_POSTRENDER_CLEANUP
         getRenderEngine().cleanupPostRender();
+#endif
         return;
     }
 
+#ifndef DISABLE_POSTRENDER_CLEANUP
     // Cleanup any outstanding resources due to rendering a prior frame.
     getRenderEngine().cleanupPostRender();
+#endif
 
     {
         std::lock_guard lock(mTexturePoolMutex);
@@ -3796,7 +3800,9 @@ void SurfaceFlinger::processDisplayChanged(const wp<IBinder>& displayToken,
 
     // Recreate the DisplayDevice if the surface or sequence ID changed.
     if (currentBinder != drawingBinder || currentState.sequenceId != drawingState.sequenceId) {
+#ifndef DISABLE_POSTRENDER_CLEANUP
         getRenderEngine().cleanFramebufferCache();
+#endif
 
         if (const auto display = getDisplayDeviceLocked(displayToken)) {
             display->disconnect();
